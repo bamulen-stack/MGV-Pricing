@@ -1,0 +1,10 @@
+{
+  "name": "MGV Pricing Manager",
+  "short_name": "MGV Pricing",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#0f4ccf",
+  "description": "Airbnb repairs pricing and quotation manager for MGV MyGreekVacations"
+}
