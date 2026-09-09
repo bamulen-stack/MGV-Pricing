@@ -1,0 +1,314 @@
+<!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Airbnb Pricing Manager V5.7.1 MGV Integrated</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f8fafc 35%,#f5f7fb 100%);color:#172033}
+header{padding:18px 20px;background:linear-gradient(135deg,#0f3f8f,#2f6ee5);color:white;position:sticky;top:0;z-index:3;border-bottom:1px solid #e5e7eb}h1{font-size:24px;margin:0}.sub{color:#dbeafe;margin-top:4px}
+.wrap{max-width:1050px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}@media(max-width:780px){.grid{grid-template-columns:1fr}}
+.card{background:white;border:1px solid #dbe5f5;border-radius:22px;padding:18px;box-shadow:0 8px 24px #0000000a}h2{margin:0 0 14px;font-size:22px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}@media(max-width:600px){.row,.row3{grid-template-columns:1fr}}
+label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select,textarea{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:14px;font-size:16px;background:white}
+.field{margin-bottom:12px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 5px 12px #2563eb33}.soft{background:#e8f1ff;color:#174ea6}.danger{background:#fee2e2;color:#b91c1c}.ghost{background:#eef2f7;color:#334155}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.line{border-top:1px solid #e5e7eb;margin:14px 0}.item{padding:12px;border:1px solid #dce6f5;border-radius:14px;margin-bottom:9px;background:linear-gradient(180deg,#ffffff,#fbfdff)}
+.itemtop{display:flex;justify-content:space-between;gap:12px}.muted{color:#64748b;font-size:13px}.price{font-weight:900}.summary{display:grid;gap:8px;background:#f8fbff;border:1px solid #dce8fb;border-radius:16px;padding:14px}
+.sumrow{display:flex;justify-content:space-between}.total{font-size:23px;font-weight:900;border-top:1px solid #cbd5e1;padding-top:10px;color:#0f4ccf}
+.badge{display:inline-block;background:#ffffff26;color:white;border:1px solid #ffffff45;font-weight:900;border-radius:999px;padding:6px 10px;font-size:12px;margin-top:8px}
+.notice{background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:12px;color:#92400e;font-size:14px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:0 0 12px}.tabs button{white-space:nowrap}.active{background:#0f4ccf;color:white}
+.hidden{display:none}.market{color:#059669;font-size:13px;font-weight:700}
+@media print{
+ header,.tabs,#quote,#history,#prices,#printActions{display:none!important}
+ body{background:#fff}
+ #printArea{display:block!important}
+ #quotationSheet{border:0!important;padding:0!important}
+ .wrap{max-width:none;padding:0}
+}
+</style><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#0f4ccf"></head><body>
+<header><h1>Airbnb Pricing Manager</h1><div class="sub">Πολλαπλές εργασίες · στοιχεία πελάτη · επαγγελματική προσφορά · χρωματικό UI</div><div class="badge">V5.7.1 MGV Integrated</div></header>
+<div class="wrap">
+<div class="tabs"><button class="active" data-tab="quote">Νέα Προσφορά</button><button data-tab="history">Ιστορικό</button><button data-tab="prices">Τιμοκατάλογος</button></div>
+
+<div id="airbnbBridge" class="card hidden" style="border-left:5px solid #0f4ccf;margin-bottom:14px">
+<h2 style="margin-top:0">🔗 Airbnb Repairs</h2>
+<div id="airbnbBridgeText" class="muted"></div>
+<div class="actions" style="margin-top:10px"><button class="soft" id="addImportedTask">＋ Προσθήκη της βλάβης στην προσφορά</button><button class="ghost" id="returnAirbnbTop">← Επιστροφή</button></div>
+</div>
+<section id="quote">
+<div class="grid">
+<div class="card">
+<h2>Στοιχεία Προσφοράς</h2>
+<div class="row"><div class="field"><label>Πελάτης / Εταιρεία</label><input id="client" placeholder="π.χ. Mrs. Zhang / Εταιρεία"></div>
+<div class="field"><label>ΑΦΜ πελάτη</label><input id="clientVat" placeholder="π.χ. 099999999"></div></div>
+<div class="row"><div class="field"><label>Διαμέρισμα</label><input id="apartment" placeholder="π.χ. ST1 / 1ος όροφος"></div>
+<div class="field"><label>Διεύθυνση</label><input id="address" placeholder="π.χ. Σαρανταπόρου 14, Καλλιθέα"></div></div>
+<div class="row"><div class="field"><label>Ημερομηνία</label><input id="date" type="date"></div>
+<div class="field"><label>Αριθμός Προσφοράς</label><input id="quoteNo" placeholder="π.χ. 2010"></div></div>
+<div class="line"></div>
+<h2>Προσθήκη Εργασίας</h2>
+<div class="row"><div class="field"><label>Κατηγορία</label><select id="category"></select></div><div class="field"><label>Εργασία</label><select id="task"></select></div></div>
+<div class="row3"><div class="field"><label>Ποσότητα</label><input id="qty" type="number" min="0" step="0.1" value="1"></div>
+<div class="field"><label>Υλικά €</label><input id="materials" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Επείγον</label><select id="urgency"><option value="1">Κανονικό</option><option value="1.25">Επείγον +25%</option><option value="1.5">Νύχτα / ΣΚ +50%</option></select></div></div>
+<div class="field"><label>Σημείωση</label><input id="note" placeholder="π.χ. διαρροή κάτω από νεροχύτη"></div>
+<div class="actions"><button class="primary" id="add">＋ Προσθήκη στην προσφορά</button><button class="soft" id="custom">＋ Άλλη εργασία στην κατηγορία</button></div>
+<div class="muted" style="margin-top:8px">Η νέα εργασία θα μπει στην κατηγορία που έχεις επιλεγμένη εκείνη τη στιγμή.</div>
+<div class="line"></div>
+<h2>Εργασίες στο διαμέρισμα</h2><div id="lines"></div>
+</div>
+
+<div class="card">
+<h2>Συνολική Προσφορά</h2>
+<div class="field"><label>Ελάχιστη χρέωση επίσκεψης €</label><input id="visit" type="number" value="35"></div>
+<div class="field"><label>ΦΠΑ %</label><input id="vat" type="number" value="24"></div>
+<div class="summary"><div class="sumrow"><span>Εργασία</span><b id="laborTotal">€0.00</b></div><div class="sumrow"><span>Υλικά</span><b id="matTotal">€0.00</b></div><div class="sumrow"><span>Καθαρή αξία</span><b id="netTotal">€0.00</b></div><div class="sumrow"><span>ΦΠΑ</span><b id="vatTotal">€0.00</b></div><div class="sumrow total"><span>Τελικό Σύνολο</span><span id="grandTotal">€0.00</span></div></div>
+<div class="line"></div>
+<div class="field"><label>Ισχύς προσφοράς</label><input id="validity" value="15 ημέρες"></div>
+<div class="field"><label>Παράδοση / Σημείωση</label><textarea id="delivery" placeholder="π.χ. Παράδοση εντός 3 εργάσιμων ημερών"></textarea></div>
+<div class="actions"><button class="primary" id="save">💾 Αποθήκευση συνολικής προσφοράς</button><button class="soft" id="printBtn">🖨️ Προεπισκόπηση / Εκτύπωση</button><button class="ghost" id="clear">Καθαρισμός</button></div>
+<div class="line"></div><div class="notice">Μπορείς να βάλεις όσες υδραυλικές, ηλεκτρολογικές, βαψίματα, θερμοσίφωνες ή άλλες εργασίες θέλεις στο ίδιο διαμέρισμα. Η επίσκεψη υπολογίζεται μία φορά στην τελική προσφορά.</div>
+</div></div>
+</section>
+
+
+<section id="printArea" class="hidden">
+<div class="card" id="quotationSheet" style="border-radius:0;box-shadow:none">
+  <div style="display:flex;justify-content:space-between;gap:24px;align-items:flex-start">
+    <div style="flex:1">
+      <div style="font-size:34px;line-height:1;font-weight:500;margin-bottom:14px">Quotation</div>
+      <div><b>Date:</b> <span id="pDate"></span></div>
+      <div><b>Quotation #</b> <span id="pQuoteNo"></span></div>
+      <div><b>Company / Client:</b> <span id="pClient"></span></div>
+      <div><b>VAT / ΑΦΜ:</b> <span id="pClientVat"></span></div>
+      <div><b>Apartment:</b> <span id="pApartment"></span></div>
+      <div><b>Address:</b> <span id="pAddress"></span></div>
+    </div>
+    <div style="min-width:250px">
+      <div style="font-size:22px;font-weight:900">MGV MyGreekVacations</div>
+      <div>MyGreekVacations</div>
+    </div>
+  </div>
+  <div style="height:18px"></div>
+  <table style="width:100%;border-collapse:collapse;font-size:14px">
+    <thead><tr>
+      <th style="border:1px solid #333;padding:7px;width:7%">#</th>
+      <th style="border:1px solid #333;padding:7px;text-align:left">Description</th>
+      <th style="border:1px solid #333;padding:7px;width:9%">Qty</th>
+      <th style="border:1px solid #333;padding:7px;width:16%">Unit Price</th>
+      <th style="border:1px solid #333;padding:7px;width:16%">Total Price</th>
+    </tr></thead>
+    <tbody id="pRows"></tbody>
+    <tfoot>
+      <tr><td colspan="3"></td><td style="border:1px solid #333;padding:7px;font-weight:800">COST</td><td id="pCost" style="border:1px solid #333;padding:7px;font-weight:800"></td></tr>
+      <tr><td colspan="3"></td><td style="border:1px solid #333;padding:7px;font-weight:800">VAT</td><td id="pVat" style="border:1px solid #333;padding:7px;font-weight:800"></td></tr>
+      <tr><td colspan="3"></td><td style="border:1px solid #333;padding:7px;font-weight:900">TOTAL COST</td><td id="pTotal" style="border:1px solid #333;padding:7px;font-weight:900"></td></tr>
+    </tfoot>
+  </table>
+  <div style="margin-top:28px"><b>This offer is valid for:</b> <span id="pValidity"></span></div>
+  <div style="margin-top:12px"><b>Delivery:</b> <span id="pDelivery"></span></div>
+  <div class="actions" style="margin-top:22px" id="printActions">
+    <button class="primary" onclick="window.print()">🖨️ Εκτύπωση / Αποθήκευση PDF</button>
+    <button class="ghost" onclick="closePrint()">Επιστροφή</button>
+  </div>
+</div>
+</section>
+
+<section id="history" class="hidden"><div class="card"><h2>Ιστορικό Προσφορών</h2><div id="historyList"></div></div></section>
+<section id="prices" class="hidden"><div class="card">
+<h2>Τιμοκατάλογος</h2>
+<div class="actions" style="margin-bottom:12px"><button class="primary" id="addPriceTask">＋ Νέα εργασία</button></div>
+<div class="muted" style="margin-bottom:12px">Προσθήκη, αλλαγή τιμής ή διαγραφή εργασιών από τον μόνιμο τιμοκατάλογο.</div>
+<div id="priceList"></div>
+</div></section>
+</div>
+<script>
+let TASKS=JSON.parse(localStorage.getItem('apm55_tasks')||JSON.stringify([{"cat": "Υδραυλικά", "name": "Αλλαγή μπαταρίας κουζίνας", "unit": "τεμ.", "price": 30, "low": 30, "high": 30}, {"cat": "Υδραυλικά", "name": "Αλλαγή μπαταρίας νιπτήρα", "unit": "τεμ.", "price": 30, "low": 30, "high": 30}, {"cat": "Υδραυλικά", "name": "Αλλαγή μπαταρίας μπάνιου", "unit": "τεμ.", "price": 30, "low": 30, "high": 30}, {"cat": "Υδραυλικά", "name": "Αλλαγή σιφωνιού νεροχύτη", "unit": "τεμ.", "price": 37.5, "low": 35, "high": 40}, {"cat": "Υδραυλικά", "name": "Αλλαγή σιφωνιού νιπτήρα", "unit": "τεμ.", "price": 42.5, "low": 35, "high": 45}, {"cat": "Υδραυλικά", "name": "Αλλαγή μηχανισμού καζανακίου", "unit": "τεμ.", "price": 45, "low": 45, "high": 45}, {"cat": "Υδραυλικά", "name": "Αλλαγή φλοτέρ καζανακίου", "unit": "τεμ.", "price": 27.5, "low": 20, "high": 30}, {"cat": "Υδραυλικά", "name": "Σύνδεση πλυντηρίου", "unit": "τεμ.", "price": 40, "low": 25, "high": 45}, {"cat": "Υδραυλικά", "name": "Αλλαγή λεκάνης WC", "unit": "τεμ.", "price": 57.5, "low": 50, "high": 60}, {"cat": "Υδραυλικά", "name": "Απόφραξη νεροχύτη / νιπτήρα", "unit": "εργασία", "price": 37.5, "low": 30, "high": 40}, {"cat": "Υδραυλικά", "name": "Απόφραξη λεκάνης / σιφωνιού δαπέδου", "unit": "εργασία", "price": 47.5, "low": 35, "high": 50}, {"cat": "Θερμοσίφωνες", "name": "Ολική αντικατάσταση ηλεκτρικού θερμοσίφωνα – μόνο εργασία", "unit": "τεμ.", "price": 70, "low": 49, "high": 80}, {"cat": "Θερμοσίφωνες", "name": "Αλλαγή αντίστασης ηλεκτρικού θερμοσίφωνα", "unit": "τεμ.", "price": 80, "low": 60, "high": 90}, {"cat": "Θερμοσίφωνες", "name": "Αλλαγή θερμοστάτη ηλεκτρικού θερμοσίφωνα", "unit": "τεμ.", "price": 42.5, "low": 35, "high": 45}, {"cat": "Θερμοσίφωνες", "name": "Αλλαγή βαλβίδας ασφαλείας θερμοσίφωνα", "unit": "τεμ.", "price": 37.5, "low": 30, "high": 40}, {"cat": "Θερμοσίφωνες", "name": "Έλεγχος θερμοσίφωνα – δεν ζεσταίνει", "unit": "έλεγχος", "price": 40, "low": 30, "high": 45}, {"cat": "Θερμοσίφωνες", "name": "Αλλαγή αντίστασης ηλιακού θερμοσίφωνα", "unit": "τεμ.", "price": 67.5, "low": 60, "high": 70}, {"cat": "Ηλεκτρολογικά", "name": "Αλλαγή πρίζας / διακόπτη", "unit": "τεμ.", "price": 20, "low": null, "high": null}, {"cat": "Ηλεκτρολογικά", "name": "Αλλαγή / τοποθέτηση φωτιστικού", "unit": "τεμ.", "price": 25, "low": null, "high": null}, {"cat": "Ηλεκτρολογικά", "name": "Μικρή ηλεκτρολογική βλάβη", "unit": "εργασία", "price": 45, "low": null, "high": null}, {"cat": "Βαψίματα", "name": "Εσωτερικό βάψιμο – 2 χέρια", "unit": "m²", "price": 6.5, "low": 5, "high": 7}, {"cat": "Βαψίματα", "name": "Βάψιμο + στοκαρίσματα / μικροεπισκευές", "unit": "m²", "price": 11.5, "low": 10, "high": 12}, {"cat": "Βαψίματα", "name": "Τοπικό ρετούς βαφής", "unit": "εργασία", "price": 35, "low": null, "high": null}, {"cat": "Γυψοσανίδα", "name": "Μικρή επισκευή τρύπας γυψοσανίδας", "unit": "εργασία", "price": 45, "low": null, "high": null}, {"cat": "Γυψοσανίδα", "name": "Επισκευή γυψοσανίδας", "unit": "m²", "price": 30, "low": null, "high": null}, {"cat": "Δάπεδα / Laminate", "name": "Τοποθέτηση laminate", "unit": "m²", "price": 11, "low": 5, "high": 13}, {"cat": "Πόρτες & Κλειδαριές", "name": "Ρύθμιση εσωτερικής πόρτας", "unit": "τεμ.", "price": 30, "low": null, "high": null}, {"cat": "Πόρτες & Κλειδαριές", "name": "Αλλαγή κλειδαριάς / κυλίνδρου", "unit": "τεμ.", "price": 35, "low": null, "high": null}, {"cat": "Έπιπλα", "name": "Επισκευή / σφίξιμο επίπλου", "unit": "εργασία", "price": 35, "low": null, "high": null}, {"cat": "Κουζίνα", "name": "Ρύθμιση μεντεσέδων ντουλαπιών", "unit": "εργασία", "price": 30, "low": null, "high": null}, {"cat": "Μπάνιο", "name": "Αλλαγή / ανανέωση σιλικόνης", "unit": "εργασία", "price": 40, "low": null, "high": null}, {"cat": "Γενικές Επισκευές", "name": "Επίσκεψη / διάγνωση τεχνικού", "unit": "επίσκεψη", "price": 35, "low": 20, "high": null}, {"cat": "Γενικές Επισκευές", "name": "Εργασία handyman", "unit": "ώρα", "price": 30, "low": null, "high": null}, {"cat": "Ζημιές από Νερό", "name": "Τοπική αποκατάσταση ζημιάς από υγρασία", "unit": "εργασία", "price": 80, "low": null, "high": null}]));
+let lines=[];
+let quotes=JSON.parse(localStorage.getItem("apm5_quotes")||"[]");
+const $=id=>document.getElementById(id), money=n=>"€"+Number(n||0).toFixed(2);
+function cats(){return [...new Set(TASKS.map(t=>t.cat))]}
+function fillCats(){$("category").innerHTML=cats().map(c=>`<option>${c}</option>`).join("");fillTasks()}
+function fillTasks(){const c=$("category").value;$("task").innerHTML=TASKS.map((t,i)=>[t,i]).filter(x=>x[0].cat===c).map(([t,i])=>`<option value="${i}">${t.name}</option>`).join("")}
+function renderLines(){
+ $("lines").innerHTML=lines.length?lines.map((l,i)=>`<div class="item"><div class="itemtop"><div><b>${l.name}</b><div class="muted">${l.category} · ${l.qty} ${l.unit}${l.note?` · ${l.note}`:""}</div></div><div class="price">${money(l.labor+l.materials)}</div></div><div class="muted">Εργασία ${money(l.labor)} · Υλικά ${money(l.materials)}</div><button class="danger" onclick="removeLine(${i})" style="margin-top:8px">Διαγραφή</button></div>`).join(""):"<div class='muted'>Δεν έχουν προστεθεί εργασίες.</div>";
+ totals();
+}
+function totals(){
+ const laborRaw=lines.reduce((s,l)=>s+l.labor,0), mats=lines.reduce((s,l)=>s+l.materials,0);
+ const labor=lines.length?Math.max(laborRaw,Number($("visit").value)||0):0;
+ const net=labor+mats, vat=net*(Number($("vat").value)||0)/100, total=net+vat;
+ $("laborTotal").textContent=money(labor);$("matTotal").textContent=money(mats);$("netTotal").textContent=money(net);$("vatTotal").textContent=money(vat);$("grandTotal").textContent=money(total);
+ return {labor,mats,net,vat,total};
+}
+$("add").onclick=()=>{const t=TASKS[+$("task").value];if(!t)return;const qty=Number($("qty").value)||1,mult=Number($("urgency").value)||1,materials=Number($("materials").value)||0;
+lines.push({category:t.cat,name:t.name,unit:t.unit,qty,base:t.price,mult,labor:t.price*qty*mult,materials,note:$("note").value.trim()});
+$("qty").value=1;$("materials").value=0;$("note").value="";renderLines();};
+$("custom").onclick=()=>{
+ const category=$("category").value||"Γενικές Επισκευές";
+ const name=prompt("Όνομα νέας εργασίας για την κατηγορία «"+category+"»:");if(!name)return;
+ const price=Number(prompt("Χρέωση εργασίας €:","35"))||0;
+ const materials=Number(prompt("Υλικά €:","0"))||0;
+ const qty=Number(prompt("Ποσότητα:","1"))||1;
+ lines.push({category,name,unit:"εργασία",qty,base:price,mult:1,labor:price*qty,materials,note:"Νέα εργασία εκτός λίστας"});
+ if(confirm("Να αποθηκευτεί και μόνιμα στον Τιμοκατάλογο;")){
+   TASKS.push({cat:category,name,unit:"εργασία",price,low:null,high:null});
+   localStorage.setItem("apm55_tasks",JSON.stringify(TASKS));fillCats();renderPrices();
+ }
+ renderLines();
+};
+window.removeLine=i=>{lines.splice(i,1);renderLines()};
+$("save").onclick=()=>{if(!lines.length)return alert("Πρόσθεσε τουλάχιστον μία εργασία.");const a=$("apartment").value.trim()||"Airbnb χωρίς όνομα",t=totals();
+const saved={id:Date.now(),client:$("client").value.trim(),clientVat:$("clientVat").value.trim(),apartment:a,address:$("address").value.trim(),quoteNo:$("quoteNo").value.trim(),date:$("date").value,validity:$("validity").value.trim(),delivery:$("delivery").value.trim(),lines:[...lines],...t};
+quotes.unshift(saved);localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory();
+if(window.airbnbContext){
+  localStorage.setItem("mgv_airbnb_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId,apartmentId:window.airbnbContext.apartmentId,quote:saved}));
+  alert("Η προσφορά αποθηκεύτηκε και είναι έτοιμη να επιστρέψει στο Airbnb Repairs.");
+  returnToAirbnb();
+}else alert("Η συνολική προσφορά αποθηκεύτηκε.");
+};
+$("clear").onclick=()=>{if(confirm("Καθαρισμός τρέχουσας προσφοράς;")){lines=[];renderLines()}};
+function renderHistory(){$("historyList").innerHTML=quotes.length?quotes.map((q,i)=>`<div class="item"><div class="itemtop"><div><b>${q.client||q.apartment}</b><div class="muted">${q.apartment} · ${q.date} · ${q.lines.length} εργασίες${q.clientVat?` · ΑΦΜ ${q.clientVat}`:""}</div></div><div class="price">${money(q.total)}</div></div><div class="muted">${q.lines.map(x=>x.name).join(" · ")}</div><button class="danger" onclick="deleteQuote(${i})" style="margin-top:8px">Διαγραφή</button></div>`).join(""):"<div class='muted'>Δεν υπάρχουν αποθηκευμένες προσφορές.</div>"}
+window.deleteQuote=i=>{if(confirm("Διαγραφή προσφοράς;")){quotes.splice(i,1);localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory()}};
+function renderPrices(){
+ $("priceList").innerHTML=TASKS.map((t,i)=>`<div class="item">
+ <div class="itemtop"><div><b>${t.name}</b><div class="muted">${t.cat} · ανά ${t.unit}</div>${t.low!=null?`<div class="market">Αγορά: ${money(t.low)}${t.high!=null?` – ${money(t.high)}`:"+"}</div>`:""}</div><div class="price">${money(t.price)}</div></div>
+ <div class="actions" style="margin-top:8px"><button class="soft" onclick="editPriceTask(${i})">✏️ Αλλαγή</button><button class="danger" onclick="deletePriceTask(${i})">Διαγραφή</button></div>
+ </div>`).join("")
+}
+
+window.editPriceTask=i=>{
+ const t=TASKS[i];
+ const name=prompt("Όνομα εργασίας:",t.name); if(name===null)return;
+ const cat=prompt("Κατηγορία:",t.cat); if(cat===null)return;
+ const unit=prompt("Μονάδα χρέωσης:",t.unit); if(unit===null)return;
+ const price=Number(prompt("Τιμή €:",String(t.price))); if(Number.isNaN(price))return;
+ TASKS[i]={...t,name:name.trim()||t.name,cat:cat.trim()||t.cat,unit:unit.trim()||t.unit,price};
+ localStorage.setItem("apm55_tasks",JSON.stringify(TASKS));fillCats();renderPrices();
+};
+window.deletePriceTask=i=>{
+ if(!confirm("Να διαγραφεί αυτή η εργασία από τον τιμοκατάλογο;"))return;
+ TASKS.splice(i,1);localStorage.setItem("apm55_tasks",JSON.stringify(TASKS));fillCats();renderPrices();
+};
+$("addPriceTask").onclick=()=>{
+ const cat=prompt("Κατηγορία:","Υδραυλικά"); if(!cat)return;
+ const name=prompt("Όνομα νέας εργασίας:"); if(!name)return;
+ const unit=prompt("Μονάδα χρέωσης:","εργασία")||"εργασία";
+ const price=Number(prompt("Τιμή €:","35")); if(Number.isNaN(price))return;
+ TASKS.push({cat:cat.trim(),name:name.trim(),unit:unit.trim(),price,low:null,high:null});
+ localStorage.setItem("apm55_tasks",JSON.stringify(TASKS));fillCats();renderPrices();
+ alert("Η εργασία προστέθηκε μόνιμα στον τιμοκατάλογο.");
+};
+
+
+function showPrint(){
+ if(!lines.length)return alert("Πρόσθεσε τουλάχιστον μία εργασία.");
+ const t=totals();
+ $("pDate").textContent=$("date").value||"-";
+ $("pQuoteNo").textContent=$("quoteNo").value||"-";
+ $("pClient").textContent=$("client").value||"-";
+ $("pClientVat").textContent=$("clientVat").value||"-";
+ $("pApartment").textContent=$("apartment").value||"-";
+ $("pAddress").textContent=$("address").value||"-";
+ $("pValidity").textContent=$("validity").value||"-";
+ $("pDelivery").textContent=$("delivery").value||"-";
+ $("pRows").innerHTML=lines.map((l,i)=>{
+ let labor=`<tr>
+ <td style="border:1px solid #333;padding:7px;text-align:center">${i+1}</td>
+ <td style="border:1px solid #333;padding:7px">${l.name} — Εργασία</td>
+ <td style="border:1px solid #333;padding:7px;text-align:center">${l.qty}</td>
+ <td style="border:1px solid #333;padding:7px;text-align:right">${money(l.labor/Math.max(1,Number(l.qty||1)))}</td>
+ <td style="border:1px solid #333;padding:7px;text-align:right">${money(l.labor)}</td>
+ </tr>`;
+ let materials=Number(l.materials||0)>0?`<tr>
+ <td style="border:1px solid #333;padding:7px;text-align:center"></td>
+ <td style="border:1px solid #333;padding:7px">${l.name} — Υλικά</td>
+ <td style="border:1px solid #333;padding:7px;text-align:center">1</td>
+ <td style="border:1px solid #333;padding:7px;text-align:right">${money(Number(l.materials))}</td>
+ <td style="border:1px solid #333;padding:7px;text-align:right">${money(Number(l.materials))}</td>
+ </tr>`:"";
+ return labor+materials;
+}).join("");
+ $("pCost").textContent=money(t.net);
+ $("pVat").textContent=money(t.vat);
+ $("pTotal").textContent=money(t.total);
+ ["quote","history","prices"].forEach(id=>$(id).classList.add("hidden"));
+ $("printArea").classList.remove("hidden");
+}
+function closePrint(){
+ $("printArea").classList.add("hidden");$("quote").classList.remove("hidden");
+}
+$("printBtn").onclick=showPrint;
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+function showPrint(){
+ if(!lines.length)return alert("Πρόσθεσε τουλάχιστον μία εργασία.");
+ const t=totals();
+ $("pDate").textContent=$("date").value||"-";
+ $("pQuoteNo").textContent=$("quoteNo").value||"-";
+ $("pClient").textContent=$("client").value||"-";
+ $("pClientVat").textContent=$("clientVat").value||"-";
+ $("pApartment").textContent=$("apartment").value||"-";
+ $("pAddress").textContent=$("address").value||"-";
+ $("pValidity").textContent=$("validity").value||"-";
+ $("pDelivery").textContent=$("delivery").value||"-";
+ $("pRows").innerHTML=lines.map((l,i)=>`<tr>
+ <td style="border:1px solid #333;padding:7px;text-align:center">${i+1}</td>
+ <td style="border:1px solid #333;padding:7px">${l.name}${l.note?`<div style="font-size:12px">${l.note}</div>`:""}</td>
+ <td style="border:1px solid #333;padding:7px;text-align:center">${l.qty}</td>
+ <td style="border:1px solid #333;padding:7px;text-align:right">${money(l.base*l.mult)}</td>
+ <td style="border:1px solid #333;padding:7px;text-align:right">${money(l.labor+l.materials)}</td>
+ </tr>`).join("");
+ $("pCost").textContent=money(t.net);
+ $("pVat").textContent=money(t.vat);
+ $("pTotal").textContent=money(t.total);
+ ["quote","history","prices"].forEach(id=>$(id).classList.add("hidden"));
+ $("printArea").classList.remove("hidden");
+}
+function closePrint(){
+ $("printArea").classList.add("hidden");$("quote").classList.remove("hidden");
+}
+$("printBtn").onclick=showPrint;
+document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["quote","history","prices"].forEach(id=>$(id).classList.toggle("hidden",id!==b.dataset.tab));if(b.dataset.tab==="history")renderHistory();if(b.dataset.tab==="prices")renderPrices();});
+$("category").onchange=fillTasks;$("visit").oninput=totals;$("vat").oninput=totals;
+
+function returnToAirbnb(){
+ if(window.airbnbContext&&window.airbnbContext.returnUrl){window.location.href=window.airbnbContext.returnUrl}
+}
+function initAirbnbBridge(){
+ const p=new URLSearchParams(location.search);
+ if(p.get("from")!=="airbnb")return;
+ window.airbnbContext={
+   taskId:p.get("taskId")||"",
+   apartmentId:p.get("apartmentId")||"",
+   apartment:p.get("apartment")||"",
+   address:p.get("address")||"",
+   work:p.get("work")||"",
+   description:p.get("description")||"",
+   returnUrl:p.get("return")||""
+ };
+ $("apartment").value=window.airbnbContext.apartment;
+ $("address").value=window.airbnbContext.address;
+ $("airbnbBridge").classList.remove("hidden");
+ $("airbnbBridgeText").textContent=(window.airbnbContext.apartment?window.airbnbContext.apartment+" — ":"")+(window.airbnbContext.work||"Βλάβη / εργασία από Airbnb Repairs");
+ $("returnAirbnbTop").onclick=returnToAirbnb;
+ $("addImportedTask").onclick=()=>{
+   let name=window.airbnbContext.work||"Airbnb repair";
+   let existing=lines.findIndex(x=>x._airbnbImported===true);
+   let price=Number(prompt("Χρέωση εργασίας €:",existing>=0?String(lines[existing].labor||35):"35"))||0;
+   let materials=Number(prompt("Υλικά €:",existing>=0?String(lines[existing].materials||0):"0"))||0;
+   let row={category:"Γενικές Επισκευές",name,unit:"εργασία",qty:1,base:price,mult:1,labor:price,materials,note:"Εισαγωγή από Airbnb Repairs",_airbnbImported:true};
+   if(existing>=0)lines[existing]=row;else lines.push(row);
+   renderLines();
+ };
+}
+
+$("date").value=new Date().toISOString().slice(0,10);fillCats();renderLines();renderHistory();renderPrices();
+initAirbnbBridge();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+</script>
+
+<div id="installBar" style="position:fixed;right:14px;bottom:14px;z-index:20;display:none">
+  <button id="installAppBtn" class="primary">📲 Εγκατάσταση MGV Pricing</button>
+</div>
+</body></html>
