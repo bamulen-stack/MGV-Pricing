@@ -1,5 +1,5 @@
 <!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Airbnb Pricing Manager V5.6 MGV</title>
+<title>Airbnb Pricing Manager V5.7 MGV Integrated</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f8fafc 35%,#f5f7fb 100%);color:#172033}
 header{padding:18px 20px;background:linear-gradient(135deg,#0f3f8f,#2f6ee5);color:white;position:sticky;top:0;z-index:3;border-bottom:1px solid #e5e7eb}h1{font-size:24px;margin:0}.sub{color:#dbeafe;margin-top:4px}
@@ -23,10 +23,15 @@ label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select
  .wrap{max-width:none;padding:0}
 }
 </style><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#0f4ccf"></head><body>
-<header><h1>Airbnb Pricing Manager</h1><div class="sub">Πολλαπλές εργασίες · στοιχεία πελάτη · επαγγελματική προσφορά · χρωματικό UI</div><div class="badge">V5.6 MGV</div></header>
+<header><h1>Airbnb Pricing Manager</h1><div class="sub">Πολλαπλές εργασίες · στοιχεία πελάτη · επαγγελματική προσφορά · χρωματικό UI</div><div class="badge">V5.7 MGV Integrated</div></header>
 <div class="wrap">
 <div class="tabs"><button class="active" data-tab="quote">Νέα Προσφορά</button><button data-tab="history">Ιστορικό</button><button data-tab="prices">Τιμοκατάλογος</button></div>
 
+<div id="airbnbBridge" class="card hidden" style="border-left:5px solid #0f4ccf;margin-bottom:14px">
+<h2 style="margin-top:0">🔗 Airbnb Repairs</h2>
+<div id="airbnbBridgeText" class="muted"></div>
+<div class="actions" style="margin-top:10px"><button class="soft" id="addImportedTask">＋ Προσθήκη της βλάβης στην προσφορά</button><button class="ghost" id="returnAirbnbTop">← Επιστροφή</button></div>
+</div>
 <section id="quote">
 <div class="grid">
 <div class="card">
@@ -151,7 +156,14 @@ $("custom").onclick=()=>{
 };
 window.removeLine=i=>{lines.splice(i,1);renderLines()};
 $("save").onclick=()=>{if(!lines.length)return alert("Πρόσθεσε τουλάχιστον μία εργασία.");const a=$("apartment").value.trim()||"Airbnb χωρίς όνομα",t=totals();
-quotes.unshift({id:Date.now(),client:$("client").value.trim(),clientVat:$("clientVat").value.trim(),apartment:a,address:$("address").value.trim(),quoteNo:$("quoteNo").value.trim(),date:$("date").value,validity:$("validity").value.trim(),delivery:$("delivery").value.trim(),lines:[...lines],...t});localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory();alert("Η συνολική προσφορά αποθηκεύτηκε.");};
+const saved={id:Date.now(),client:$("client").value.trim(),clientVat:$("clientVat").value.trim(),apartment:a,address:$("address").value.trim(),quoteNo:$("quoteNo").value.trim(),date:$("date").value,validity:$("validity").value.trim(),delivery:$("delivery").value.trim(),lines:[...lines],...t};
+quotes.unshift(saved);localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory();
+if(window.airbnbContext){
+  localStorage.setItem("mgv_airbnb_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId,apartmentId:window.airbnbContext.apartmentId,quote:saved}));
+  alert("Η προσφορά αποθηκεύτηκε και είναι έτοιμη να επιστρέψει στο Airbnb Repairs.");
+  returnToAirbnb();
+}else alert("Η συνολική προσφορά αποθηκεύτηκε.");
+};
 $("clear").onclick=()=>{if(confirm("Καθαρισμός τρέχουσας προσφοράς;")){lines=[];renderLines()}};
 function renderHistory(){$("historyList").innerHTML=quotes.length?quotes.map((q,i)=>`<div class="item"><div class="itemtop"><div><b>${q.client||q.apartment}</b><div class="muted">${q.apartment} · ${q.date} · ${q.lines.length} εργασίες${q.clientVat?` · ΑΦΜ ${q.clientVat}`:""}</div></div><div class="price">${money(q.total)}</div></div><div class="muted">${q.lines.map(x=>x.name).join(" · ")}</div><button class="danger" onclick="deleteQuote(${i})" style="margin-top:8px">Διαγραφή</button></div>`).join(""):"<div class='muted'>Δεν υπάρχουν αποθηκευμένες προσφορές.</div>"}
 window.deleteQuote=i=>{if(confirm("Διαγραφή προσφοράς;")){quotes.splice(i,1);localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory()}};
@@ -245,7 +257,38 @@ function closePrint(){
 $("printBtn").onclick=showPrint;
 document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["quote","history","prices"].forEach(id=>$(id).classList.toggle("hidden",id!==b.dataset.tab));if(b.dataset.tab==="history")renderHistory();if(b.dataset.tab==="prices")renderPrices();});
 $("category").onchange=fillTasks;$("visit").oninput=totals;$("vat").oninput=totals;
+
+function returnToAirbnb(){
+ if(window.airbnbContext&&window.airbnbContext.returnUrl){window.location.href=window.airbnbContext.returnUrl}
+}
+function initAirbnbBridge(){
+ const p=new URLSearchParams(location.search);
+ if(p.get("from")!=="airbnb")return;
+ window.airbnbContext={
+   taskId:p.get("taskId")||"",
+   apartmentId:p.get("apartmentId")||"",
+   apartment:p.get("apartment")||"",
+   address:p.get("address")||"",
+   work:p.get("work")||"",
+   description:p.get("description")||"",
+   returnUrl:p.get("return")||""
+ };
+ $("apartment").value=window.airbnbContext.apartment;
+ $("address").value=window.airbnbContext.address;
+ $("airbnbBridge").classList.remove("hidden");
+ $("airbnbBridgeText").textContent=(window.airbnbContext.apartment?window.airbnbContext.apartment+" — ":"")+(window.airbnbContext.work||"Βλάβη / εργασία από Airbnb Repairs");
+ $("returnAirbnbTop").onclick=returnToAirbnb;
+ $("addImportedTask").onclick=()=>{
+   let name=window.airbnbContext.work||"Airbnb repair";
+   let price=Number(prompt("Χρέωση εργασίας €:","35"))||0;
+   let materials=Number(prompt("Υλικά €:","0"))||0;
+   lines.push({category:"Γενικές Επισκευές",name,unit:"εργασία",qty:1,base:price,mult:1,labor:price,materials,note:window.airbnbContext.description||"Εισαγωγή από Airbnb Repairs"});
+   renderLines();
+ };
+}
+
 $("date").value=new Date().toISOString().slice(0,10);fillCats();renderLines();renderHistory();renderPrices();
+initAirbnbBridge();
 </script>
 <script>
 if ("serviceWorker" in navigator) {
