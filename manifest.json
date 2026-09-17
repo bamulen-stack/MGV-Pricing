@@ -1,29 +1,20 @@
 {
-  "id": "./",
   "name": "MGV Pricing Manager",
   "short_name": "MGV Pricing",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "./",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone"
-  ],
   "background_color": "#f5f7fb",
   "theme_color": "#0f4ccf",
-  "description": "MGV MyGreekVacations – Airbnb Pricing & Quotation Manager integrated with Airbnb Repairs",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
