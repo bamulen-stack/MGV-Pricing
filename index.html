@@ -1,5 +1,5 @@
 <!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MGV Pricing Manager V5.8 Renovation Pricing</title>
+<title>MGV Pricing Manager V5.9 Long Term Bridge</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f8fafc 35%,#f5f7fb 100%);color:#172033}
 header{padding:18px 20px;background:linear-gradient(135deg,#0f3f8f,#2f6ee5);color:white;position:sticky;top:0;z-index:3;border-bottom:1px solid #e5e7eb}h1{font-size:24px;margin:0}.sub{color:#dbeafe;margin-top:4px}
@@ -23,7 +23,7 @@ label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select
  .wrap{max-width:none;padding:0}
 }
 </style><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#0f4ccf"></head><body>
-<header><h1>MGV Pricing Manager</h1><div class="sub">Επισκευές · μερικές ανακαινίσεις · Μέση / Υψηλή αγοράς · επαγγελματική προσφορά</div><div class="badge">V5.8 Renovation Pricing</div></header>
+<header><h1>MGV Pricing Manager</h1><div class="sub">Επισκευές · μερικές ανακαινίσεις · Μέση / Υψηλή αγοράς · επαγγελματική προσφορά</div><div class="badge">V5.9 Long Term Bridge</div></header>
 <div class="wrap">
 <div class="tabs"><button class="active" data-tab="quote">Νέα Προσφορά</button><button data-tab="history">Ιστορικό</button><button data-tab="prices">Τιμοκατάλογος</button></div>
 
@@ -185,8 +185,13 @@ $("save").onclick=()=>{if(!lines.length)return alert("Πρόσθεσε τουλ�
 const saved={id:Date.now(),client:$("client").value.trim(),clientVat:$("clientVat").value.trim(),apartment:a,address:$("address").value.trim(),quoteNo:$("quoteNo").value.trim(),date:$("date").value,validity:$("validity").value.trim(),delivery:$("delivery").value.trim(),lines:[...lines],...t};
 quotes.unshift(saved);localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory();
 if(window.airbnbContext){
-  localStorage.setItem("mgv_airbnb_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId,apartmentId:window.airbnbContext.apartmentId,quote:saved}));
-  alert("Η προσφορά αποθηκεύτηκε και είναι έτοιμη να επιστρέψει στο Airbnb Repairs.");
+  if(window.airbnbContext.source==="longterm"){
+    localStorage.setItem("mgv_longterm_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId||"",apartmentId:window.airbnbContext.apartmentId,quote:saved}));
+    alert("Η προσφορά αποθηκεύτηκε και θα επιστρέψει στο Long Term διαμέρισμα.");
+  }else{
+    localStorage.setItem("mgv_airbnb_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId,apartmentId:window.airbnbContext.apartmentId,quote:saved}));
+    alert("Η προσφορά αποθηκεύτηκε και είναι έτοιμη να επιστρέψει στο Airbnb Repairs.");
+  }
   returnToAirbnb();
 }else alert("Η συνολική προσφορά αποθηκεύτηκε.");
 };
@@ -299,8 +304,9 @@ function returnToAirbnb(){
 }
 function initAirbnbBridge(){
  const p=new URLSearchParams(location.search);
- if(p.get("from")!=="airbnb")return;
+ if(!["airbnb","longterm"].includes(p.get("from")))return;
  window.airbnbContext={
+   source:p.get("from"),
    taskId:p.get("taskId")||"",
    apartmentId:p.get("apartmentId")||"",
    apartment:p.get("apartment")||"",
@@ -312,14 +318,14 @@ function initAirbnbBridge(){
  $("apartment").value=window.airbnbContext.apartment;
  $("address").value=window.airbnbContext.address;
  $("airbnbBridge").classList.remove("hidden");
- $("airbnbBridgeText").textContent=(window.airbnbContext.apartment?window.airbnbContext.apartment+" — ":"")+(window.airbnbContext.work||"Βλάβη / εργασία από Airbnb Repairs");
+ $("airbnbBridgeText").textContent=(window.airbnbContext.source==="longterm"?"🏠 Long Term — ":"")+(window.airbnbContext.apartment?window.airbnbContext.apartment+" — ":"")+(window.airbnbContext.work||(window.airbnbContext.source==="longterm"?"Long Term εργασία":"Βλάβη / εργασία από Airbnb Repairs"));
  $("returnAirbnbTop").onclick=returnToAirbnb;
  $("addImportedTask").onclick=()=>{
-   let name=window.airbnbContext.work||"Airbnb repair";
+   let name=window.airbnbContext.work||(window.airbnbContext.source==="longterm"?"Long Term repair":"Airbnb repair");
    let existing=lines.findIndex(x=>x._airbnbImported===true);
    let price=Number(prompt("Χρέωση εργασίας €:",existing>=0?String(lines[existing].labor||35):"35"))||0;
    let materials=Number(prompt("Υλικά €:",existing>=0?String(lines[existing].materials||0):"0"))||0;
-   let row={category:"Γενικές Επισκευές",name,unit:"εργασία",qty:1,base:price,mult:1,labor:price,materials,note:"Εισαγωγή από Airbnb Repairs",_airbnbImported:true};
+   let row={category:"Γενικές Επισκευές",name,unit:"εργασία",qty:1,base:price,mult:1,labor:price,materials,note:(window.airbnbContext.source==="longterm"?"Εισαγωγή από Long Term":"Εισαγωγή από Airbnb Repairs"),_airbnbImported:true};
    if(existing>=0)lines[existing]=row;else lines.push(row);
    renderLines();
  };
