@@ -1,5 +1,5 @@
 <!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MGV Pricing Manager V5.10 Save Fix</title>
+<title>MGV Pricing Manager V5.11 Materials Price List</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f8fafc 35%,#f5f7fb 100%);color:#172033}
 header{padding:18px 20px;background:linear-gradient(135deg,#0f3f8f,#2f6ee5);color:white;position:sticky;top:0;z-index:3;border-bottom:1px solid #e5e7eb}h1{font-size:24px;margin:0}.sub{color:#dbeafe;margin-top:4px}
@@ -23,7 +23,7 @@ label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select
  .wrap{max-width:none;padding:0}
 }
 </style><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#0f4ccf"></head><body>
-<header><h1>MGV Pricing Manager</h1><div class="sub">Επισκευές · μερικές ανακαινίσεις · Μέση / Υψηλή αγοράς · επαγγελματική προσφορά</div><div class="badge">V5.10 Save Fix</div></header>
+<header><h1>MGV Pricing Manager</h1><div class="sub">Επισκευές · μερικές ανακαινίσεις · Μέση / Υψηλή αγοράς · επαγγελματική προσφορά</div><div class="badge">V5.11 Materials Price List</div></header>
 <div class="wrap">
 <div class="tabs"><button class="active" data-tab="quote">Νέα Προσφορά</button><button data-tab="history">Ιστορικό</button><button data-tab="prices">Τιμοκατάλογος</button></div>
 
@@ -50,7 +50,14 @@ label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select
 <div id="marketHint" class="market" style="margin:-4px 0 12px"></div>
 <div class="row3"><div class="field"><label>Ποσότητα</label><input id="qty" type="number" min="0" step="0.1" value="1"></div>
 <div class="field"><label>Υλικά €</label><input id="materials" type="number" min="0" step="0.01" value="0"></div>
-<div class="field"><label>Επείγον</label><select id="urgency"><option value="1">Κανονικό</option><option value="1.25">Επείγον +25%</option><option value="1.5">Νύχτα / ΣΚ +50%</option></select></div></div>
+<div class="field"><label>Επείγον</label><select id="urgency"><option value="1">Κανονικό</option><option value="1.25">Επείγον +25%</option><option value="1.5">Νύχτα / ΣΚ +50%</option></select></div></div><div class="market" style="margin:4px 0 12px">
+<b>🧱 Υλικά από τιμοκατάλογο</b>
+<div class="row" style="margin-top:8px"><div class="field"><label>Κατηγορία υλικού</label><select id="matCategory"></select></div><div class="field"><label>Υλικό</label><select id="matItem"></select></div></div>
+<div class="row3"><div class="field"><label>Τιμή</label><select id="matPriceMode"><option value="average">Μέση αγοράς</option><option value="upper">Υψηλή αγοράς</option><option value="custom">Δική μου</option></select></div><div class="field"><label>Ποσότητα</label><input id="matQty" type="number" min="0" step="0.1" value="1"></div><div class="field"><label>Δική μου τιμή €</label><input id="matCustomPrice" type="number" min="0" step="0.01" placeholder="προαιρετικό"></div></div>
+<div id="matHint" class="muted"></div>
+<div class="actions"><button class="soft" id="addMaterial" type="button">＋ Προσθήκη υλικού</button><button class="ghost" id="clearMaterials" type="button">Καθαρισμός υλικών</button></div>
+<div id="selectedMaterials" class="muted" style="margin-top:8px">Δεν έχουν επιλεγεί υλικά.</div>
+</div>
 <div class="field"><label>Σημείωση</label><input id="note" placeholder="π.χ. διαρροή κάτω από νεροχύτη"></div>
 <div class="actions"><button class="primary" id="add">＋ Προσθήκη στην προσφορά</button><button class="soft" id="custom">＋ Άλλη εργασία στην κατηγορία</button></div>
 <div class="muted" style="margin-top:8px">Η νέα εργασία θα μπει στην κατηγορία που έχεις επιλεγμένη εκείνη τη στιγμή.</div>
@@ -142,6 +149,8 @@ if(localStorage.getItem('mgv_pricing_catalog_v58')!=='1'){
 }
 let lines=[];
 let quotes=JSON.parse(localStorage.getItem("apm5_quotes")||"[]");
+const MATERIAL_CATALOG=[{"cat": "🎨 Paint & Painting", "name": "Πλαστικό χρώμα εσωτερικού 10L", "unit": "δοχείο", "average": 41, "upper": 55}, {"cat": "🎨 Paint & Painting", "name": "Πλαστικό χρώμα εσωτερικού 3L", "unit": "δοχείο", "average": 17, "upper": 25}, {"cat": "🎨 Paint & Painting", "name": "Αντιμουχλικό Kitchen/Bath 3L", "unit": "δοχείο", "average": 22, "upper": 32}, {"cat": "🎨 Paint & Painting", "name": "Αντιμουχλικό Kitchen/Bath 10L", "unit": "δοχείο", "average": 53, "upper": 65}, {"cat": "🎨 Paint & Painting", "name": "Ακρυλικό χρώμα εξωτερικού 10L", "unit": "δοχείο", "average": 50, "upper": 70}, {"cat": "🎨 Paint & Painting", "name": "Αστάρι νερού / ακρυλικό 5L", "unit": "δοχείο", "average": 14, "upper": 25}, {"cat": "🎨 Paint & Painting", "name": "Αστάρι γυψοσανίδας 10L", "unit": "δοχείο", "average": 26, "upper": 32}, {"cat": "🎨 Paint & Painting", "name": "Ριπολίνη νερού 2.5L", "unit": "δοχείο", "average": 34, "upper": 42}, {"cat": "🎨 Paint & Painting", "name": "Ριπολίνη νερού 0.75L", "unit": "δοχείο", "average": 14, "upper": 20}, {"cat": "🎨 Paint & Painting", "name": "Στόκος σπατουλαρίσματος 5kg", "unit": "σακί", "average": 9, "upper": 15}, {"cat": "🎨 Paint & Painting", "name": "Στόκος σπατουλαρίσματος 20kg", "unit": "σακί", "average": 22, "upper": 35}, {"cat": "🎨 Paint & Painting", "name": "Χαρτοταινία βαφής", "unit": "τεμ.", "average": 3, "upper": 6}, {"cat": "🎨 Paint & Painting", "name": "Νάιλον προστασίας", "unit": "τεμ.", "average": 4, "upper": 8}, {"cat": "🎨 Paint & Painting", "name": "Ρολό βαφής", "unit": "τεμ.", "average": 5, "upper": 12}, {"cat": "🎨 Paint & Painting", "name": "Πινέλο", "unit": "τεμ.", "average": 4, "upper": 10}, {"cat": "🧱 Drywall", "name": "Γυψοσανίδα απλή 12.5mm", "unit": "m²", "average": 4, "upper": 6}, {"cat": "🧱 Drywall", "name": "Γυψοσανίδα ανθυγρή 12.5mm", "unit": "m²", "average": 4.85, "upper": 7}, {"cat": "🧱 Drywall", "name": "Γυψόκολλα / Perlfix 5kg", "unit": "σακί", "average": 3.8, "upper": 6}, {"cat": "🧱 Drywall", "name": "Υλικό αρμολόγησης 25kg", "unit": "σακί", "average": 18, "upper": 25}, {"cat": "🧱 Drywall", "name": "Ορθοστάτης γυψοσανίδας", "unit": "m", "average": 2.2, "upper": 3.5}, {"cat": "🧱 Drywall", "name": "Στρωτήρας γυψοσανίδας", "unit": "m", "average": 1.8, "upper": 3}, {"cat": "🧱 Drywall", "name": "Ταινία αρμού", "unit": "ρολό", "average": 4, "upper": 8}, {"cat": "🧱 Drywall", "name": "Βίδες γυψοσανίδας", "unit": "κουτί", "average": 6, "upper": 12}, {"cat": "🟫 Laminate & Flooring", "name": "Laminate οικονομικό", "unit": "m²", "average": 9, "upper": 14}, {"cat": "🟫 Laminate & Flooring", "name": "Laminate μεσαίας κατηγορίας", "unit": "m²", "average": 15, "upper": 24}, {"cat": "🟫 Laminate & Flooring", "name": "Laminate premium", "unit": "m²", "average": 25, "upper": 35}, {"cat": "🟫 Laminate & Flooring", "name": "Υπόστρωμα laminate", "unit": "m²", "average": 2, "upper": 5}, {"cat": "🟫 Laminate & Flooring", "name": "Σοβατεπί laminate/MDF", "unit": "m", "average": 4, "upper": 8}, {"cat": "🔲 Tiles", "name": "Κόλλα πλακιδίων C1 25kg", "unit": "σακί", "average": 8, "upper": 10}, {"cat": "🔲 Tiles", "name": "Κόλλα πλακιδίων C2 25kg", "unit": "σακί", "average": 14, "upper": 18}, {"cat": "🔲 Tiles", "name": "Αρμόστοκος 4kg", "unit": "τεμ.", "average": 9, "upper": 17}, {"cat": "🔲 Tiles", "name": "Αστάρι πρόσφυσης 5kg", "unit": "τεμ.", "average": 14, "upper": 22}, {"cat": "💧 Waterproofing", "name": "Στεγανωτικό μπάνιου 5kg", "unit": "τεμ.", "average": 26.3, "upper": 35}, {"cat": "💧 Waterproofing", "name": "Ελαστικό στεγανωτικό 25kg", "unit": "τεμ.", "average": 55, "upper": 85}, {"cat": "💧 Waterproofing", "name": "Ταινία στεγάνωσης", "unit": "ρολό", "average": 18, "upper": 30}, {"cat": "🚿 Plumbing", "name": "Σιφόνι δαπέδου", "unit": "τεμ.", "average": 12, "upper": 25}, {"cat": "🚿 Plumbing", "name": "Σπιράλ σύνδεσης", "unit": "τεμ.", "average": 4, "upper": 9}, {"cat": "🚿 Plumbing", "name": "Βανάκι γωνιακό", "unit": "τεμ.", "average": 5, "upper": 12}, {"cat": "🚿 Plumbing", "name": "Σωλήνα PPR Φ20", "unit": "m", "average": 2.5, "upper": 5}, {"cat": "🚿 Plumbing", "name": "Σωλήνα αποχέτευσης PVC Φ50", "unit": "m", "average": 4, "upper": 8}, {"cat": "⚡ Electrical", "name": "Πρίζα σούκο", "unit": "τεμ.", "average": 5, "upper": 12}, {"cat": "⚡ Electrical", "name": "Διακόπτης φωτισμού", "unit": "τεμ.", "average": 5, "upper": 12}, {"cat": "⚡ Electrical", "name": "Καλώδιο NYM 3x1.5", "unit": "m", "average": 1.1, "upper": 1.8}, {"cat": "⚡ Electrical", "name": "Καλώδιο NYM 3x2.5", "unit": "m", "average": 1.7, "upper": 2.7}, {"cat": "⚡ Electrical", "name": "Μικροαυτόματος 16A", "unit": "τεμ.", "average": 6, "upper": 12}, {"cat": "⚡ Electrical", "name": "Ρελέ διαρροής 40A/30mA", "unit": "τεμ.", "average": 28, "upper": 50}, {"cat": "🧰 General", "name": "Σιλικόνη sanitary", "unit": "τεμ.", "average": 6, "upper": 12}, {"cat": "🧰 General", "name": "Ακρυλικός στόκος / sealant", "unit": "τεμ.", "average": 3.5, "upper": 7}, {"cat": "🧰 General", "name": "Αφρός πολυουρεθάνης", "unit": "τεμ.", "average": 6, "upper": 10}, {"cat": "🧰 General", "name": "Επισκευαστικό κονίαμα 25kg", "unit": "σακί", "average": 15, "upper": 22}];
+let selectedMaterials=[];
 const $=id=>document.getElementById(id), money=n=>"€"+Number(n||0).toFixed(2);
 function cats(){return [...new Set(TASKS.map(t=>t.cat))]}
 function fillCats(){$("category").innerHTML=cats().map(c=>`<option>${c}</option>`).join("");fillTasks()}
@@ -149,8 +158,42 @@ function fillTasks(){const c=$("category").value;$("task").innerHTML=TASKS.map((
 function updateMarketHint(){const t=TASKS[+$("task").value];if(!t)return;const a=Number(t.average!=null?t.average:t.price)||0,u=Number(t.upper!=null?t.upper:(t.high!=null?t.high:t.price))||a;$("marketHint").textContent=`Μέση αγοράς: ${money(a)} / ${t.unit} · Υψηλή αγοράς: ${money(u)} / ${t.unit}`;if($("priceMode").value==="custom"&&!$("customPrice").value)$("customPrice").value=a}
 function togglePriceMode(){$("customPriceWrap").classList.toggle("hidden",$("priceMode").value!=="custom");updateMarketHint()}
 $("task").addEventListener("change",updateMarketHint);$("priceMode").addEventListener("change",togglePriceMode);
+
+function materialCats(){return [...new Set(MATERIAL_CATALOG.map(x=>x.cat))]}
+function fillMaterialCats(){
+ $("matCategory").innerHTML=materialCats().map(c=>`<option>${c}</option>`).join("");
+ fillMaterialItems();
+}
+function fillMaterialItems(){
+ const c=$("matCategory").value;
+ $("matItem").innerHTML=MATERIAL_CATALOG.map((x,i)=>[x,i]).filter(([x])=>x.cat===c).map(([x,i])=>`<option value="${i}">${x.name}</option>`).join("");
+ updateMaterialHint();
+}
+function updateMaterialHint(){
+ const m=MATERIAL_CATALOG[+$("matItem").value];if(!m)return;
+ $("matHint").textContent=`Μέση αγοράς: ${money(m.average)} / ${m.unit} · Υψηλή αγοράς: ${money(m.upper)} / ${m.unit}`;
+ if($("matPriceMode").value==="custom"&&!$("matCustomPrice").value)$("matCustomPrice").value=m.average;
+}
+function renderSelectedMaterials(){
+ const total=selectedMaterials.reduce((s,x)=>s+x.qty*x.price,0);
+ $("materials").value=total.toFixed(2);
+ $("selectedMaterials").innerHTML=selectedMaterials.length?selectedMaterials.map((x,i)=>`<div style="margin:4px 0"><b>${x.name}</b> · ${x.qty} ${x.unit} × ${money(x.price)} = <b>${money(x.qty*x.price)}</b> <button class="danger" type="button" onclick="removeSelectedMaterial(${i})" style="padding:3px 7px;margin-left:5px">×</button></div>`).join(""):"Δεν έχουν επιλεγεί υλικά.";
+}
+window.removeSelectedMaterial=i=>{selectedMaterials.splice(i,1);renderSelectedMaterials()}
+$("matCategory").onchange=fillMaterialItems;
+$("matItem").onchange=updateMaterialHint;
+$("matPriceMode").onchange=updateMaterialHint;
+$("addMaterial").onclick=()=>{
+ const m=MATERIAL_CATALOG[+$("matItem").value];if(!m)return;
+ const qty=Number($("matQty").value)||1,mode=$("matPriceMode").value;
+ const price=mode==="upper"?m.upper:mode==="custom"?(Number($("matCustomPrice").value)||m.average):m.average;
+ selectedMaterials.push({...m,qty,price,priceMode:mode});
+ $("matQty").value=1;$("matCustomPrice").value="";
+ renderSelectedMaterials();
+};
+$("clearMaterials").onclick=()=>{selectedMaterials=[];renderSelectedMaterials()};
 function renderLines(){
- $("lines").innerHTML=lines.length?lines.map((l,i)=>`<div class="item"><div class="itemtop"><div><b>${l.name}</b><div class="muted">${l.category} · ${l.qty} ${l.unit}${l.note?` · ${l.note}`:""}</div></div><div class="price">${money(l.labor+l.materials)}</div></div><div class="muted">Εργασία ${money(l.labor)} · Υλικά ${money(l.materials)}</div><button class="danger" onclick="removeLine(${i})" style="margin-top:8px">Διαγραφή</button></div>`).join(""):"<div class='muted'>Δεν έχουν προστεθεί εργασίες.</div>";
+ $("lines").innerHTML=lines.length?lines.map((l,i)=>`<div class="item"><div class="itemtop"><div><b>${l.name}</b><div class="muted">${l.category} · ${l.qty} ${l.unit}${l.note?` · ${l.note}`:""}${l.materialDetails?.length?`<br>🧱 ${l.materialDetails.map(m=>`${m.name} ×${m.qty}`).join(" · ")}`:""}</div></div><div class="price">${money(l.labor+l.materials)}</div></div><div class="muted">Εργασία ${money(l.labor)} · Υλικά ${money(l.materials)}</div><button class="danger" onclick="removeLine(${i})" style="margin-top:8px">Διαγραφή</button></div>`).join(""):"<div class='muted'>Δεν έχουν προστεθεί εργασίες.</div>";
  totals();
 }
 function totals(){
@@ -165,8 +208,8 @@ const mode=$("priceMode").value||"average";
 const average=Number(t.average!=null?t.average:t.price)||0;
 const upper=Number(t.upper!=null?t.upper:(t.high!=null?t.high:t.price))||average;
 const unitPrice=mode==="upper"?upper:mode==="custom"?(Number($("customPrice").value)||average):average;
-lines.push({category:t.cat,name:t.name,unit:t.unit,qty,base:unitPrice,priceMode:mode,mult,labor:unitPrice*qty*mult,materials,note:$("note").value.trim()});
-$("qty").value=1;$("materials").value=0;$("note").value="";renderLines();};
+lines.push({category:t.cat,name:t.name,unit:t.unit,qty,base:unitPrice,priceMode:mode,mult,labor:unitPrice*qty*mult,materials,note:$("note").value.trim(),materialDetails:[...selectedMaterials]});
+$("qty").value=1;$("materials").value=0;$("note").value="";selectedMaterials=[];renderSelectedMaterials();renderLines();};
 $("custom").onclick=()=>{
  const category=$("category").value||"Γενικές Επισκευές";
  const name=prompt("Όνομα νέας εργασίας για την κατηγορία «"+category+"»:");if(!name)return;
@@ -340,7 +383,7 @@ function initAirbnbBridge(){
  };
 }
 
-$("date").value=new Date().toISOString().slice(0,10);fillCats();renderLines();renderHistory();renderPrices();
+$("date").value=new Date().toISOString().slice(0,10);fillCats();fillMaterialCats();renderSelectedMaterials();renderLines();renderHistory();renderPrices();
 initAirbnbBridge();
 </script>
 <script>
