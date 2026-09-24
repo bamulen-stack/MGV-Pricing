@@ -1,5 +1,5 @@
 <!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MGV Pricing Manager V5.9 Long Term Bridge</title>
+<title>MGV Pricing Manager V5.10 Save Fix</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f8fafc 35%,#f5f7fb 100%);color:#172033}
 header{padding:18px 20px;background:linear-gradient(135deg,#0f3f8f,#2f6ee5);color:white;position:sticky;top:0;z-index:3;border-bottom:1px solid #e5e7eb}h1{font-size:24px;margin:0}.sub{color:#dbeafe;margin-top:4px}
@@ -23,7 +23,7 @@ label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select
  .wrap{max-width:none;padding:0}
 }
 </style><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#0f4ccf"></head><body>
-<header><h1>MGV Pricing Manager</h1><div class="sub">Επισκευές · μερικές ανακαινίσεις · Μέση / Υψηλή αγοράς · επαγγελματική προσφορά</div><div class="badge">V5.9 Long Term Bridge</div></header>
+<header><h1>MGV Pricing Manager</h1><div class="sub">Επισκευές · μερικές ανακαινίσεις · Μέση / Υψηλή αγοράς · επαγγελματική προσφορά</div><div class="badge">V5.10 Save Fix</div></header>
 <div class="wrap">
 <div class="tabs"><button class="active" data-tab="quote">Νέα Προσφορά</button><button data-tab="history">Ιστορικό</button><button data-tab="prices">Τιμοκατάλογος</button></div>
 
@@ -66,7 +66,7 @@ label{display:block;font-weight:700;color:#475569;margin-bottom:6px}input,select
 <div class="line"></div>
 <div class="field"><label>Ισχύς προσφοράς</label><input id="validity" value="15 ημέρες"></div>
 <div class="field"><label>Παράδοση / Σημείωση</label><textarea id="delivery" placeholder="π.χ. Παράδοση εντός 3 εργάσιμων ημερών"></textarea></div>
-<div class="actions"><button class="primary" id="save">💾 Αποθήκευση συνολικής προσφοράς</button><button class="soft" id="printBtn">🖨️ Προεπισκόπηση / Εκτύπωση</button><button class="ghost" id="clear">Καθαρισμός</button></div>
+<div class="actions"><button class="primary" id="save" type="button">💾 Αποθήκευση συνολικής προσφοράς</button><button class="soft" id="printBtn" type="button">🖨️ Προεπισκόπηση / Εκτύπωση</button><button class="ghost" id="clear" type="button">Καθαρισμός</button></div>
 <div class="line"></div><div class="notice">Μπορείς να βάλεις όσες υδραυλικές, ηλεκτρολογικές, βαψίματα, θερμοσίφωνες ή άλλες εργασίες θέλεις στο ίδιο διαμέρισμα. Η επίσκεψη υπολογίζεται μία φορά στην τελική προσφορά.</div>
 </div></div>
 </section>
@@ -181,19 +181,28 @@ $("custom").onclick=()=>{
  renderLines();
 };
 window.removeLine=i=>{lines.splice(i,1);renderLines()};
-$("save").onclick=()=>{if(!lines.length)return alert("Πρόσθεσε τουλάχιστον μία εργασία.");const a=$("apartment").value.trim()||"Airbnb χωρίς όνομα",t=totals();
-const saved={id:Date.now(),client:$("client").value.trim(),clientVat:$("clientVat").value.trim(),apartment:a,address:$("address").value.trim(),quoteNo:$("quoteNo").value.trim(),date:$("date").value,validity:$("validity").value.trim(),delivery:$("delivery").value.trim(),lines:[...lines],...t};
-quotes.unshift(saved);localStorage.setItem("apm5_quotes",JSON.stringify(quotes));renderHistory();
-if(window.airbnbContext){
-  if(window.airbnbContext.source==="longterm"){
-    localStorage.setItem("mgv_longterm_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId||"",apartmentId:window.airbnbContext.apartmentId,quote:saved}));
-    alert("Η προσφορά αποθηκεύτηκε και θα επιστρέψει στο Long Term διαμέρισμα.");
-  }else{
-    localStorage.setItem("mgv_airbnb_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId,apartmentId:window.airbnbContext.apartmentId,quote:saved}));
-    alert("Η προσφορά αποθηκεύτηκε και είναι έτοιμη να επιστρέψει στο Airbnb Repairs.");
-  }
-  returnToAirbnb();
-}else alert("Η συνολική προσφορά αποθηκεύτηκε.");
+$("save").onclick=(ev)=>{
+ ev?.preventDefault?.();
+ ev?.stopPropagation?.();
+ if(!lines.length)return alert("Πρόσθεσε τουλάχιστον μία εργασία.");
+ const a=$("apartment").value.trim()||"Airbnb χωρίς όνομα",t=totals();
+ const saved={id:Date.now(),client:$("client").value.trim(),clientVat:$("clientVat").value.trim(),apartment:a,address:$("address").value.trim(),quoteNo:$("quoteNo").value.trim(),date:$("date").value,validity:$("validity").value.trim(),delivery:$("delivery").value.trim(),lines:[...lines],...t};
+ quotes.unshift(saved);
+ localStorage.setItem("apm5_quotes",JSON.stringify(quotes));
+ renderHistory();
+ if(window.airbnbContext){
+   if(window.airbnbContext.source==="longterm"){
+     localStorage.setItem("mgv_longterm_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId||"",apartmentId:window.airbnbContext.apartmentId,quote:saved}));
+     alert("Η προσφορά αποθηκεύτηκε στο Long Term.");
+   }else{
+     localStorage.setItem("mgv_airbnb_quote_transfer",JSON.stringify({taskId:window.airbnbContext.taskId||"",apartmentId:window.airbnbContext.apartmentId,quote:saved}));
+     alert("Η προσφορά αποθηκεύτηκε στο Airbnb Repairs.");
+   }
+   returnToAirbnb();
+ }else{
+   alert("Η προσφορά αποθηκεύτηκε.");
+ }
+ return false;
 };
 $("clear").onclick=()=>{if(confirm("Καθαρισμός τρέχουσας προσφοράς;")){lines=[];renderLines()}};
 function renderHistory(){$("historyList").innerHTML=quotes.length?quotes.map((q,i)=>`<div class="item"><div class="itemtop"><div><b>${q.client||q.apartment}</b><div class="muted">${q.apartment} · ${q.date} · ${q.lines.length} εργασίες${q.clientVat?` · ΑΦΜ ${q.clientVat}`:""}</div></div><div class="price">${money(q.total)}</div></div><div class="muted">${q.lines.map(x=>x.name).join(" · ")}</div><button class="danger" onclick="deleteQuote(${i})" style="margin-top:8px">Διαγραφή</button></div>`).join(""):"<div class='muted'>Δεν υπάρχουν αποθηκευμένες προσφορές.</div>"}
